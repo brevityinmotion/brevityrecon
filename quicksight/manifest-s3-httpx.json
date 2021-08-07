@@ -1,0 +1,10 @@
+{
+    "fileLocations": [{
+        "URIPrefixes": [
+            "s3://brevity-data/presentation/httpx/"
+        ]
+    }],
+    "globalUploadSettings": {
+        "format": "JSON"
+    }
+}

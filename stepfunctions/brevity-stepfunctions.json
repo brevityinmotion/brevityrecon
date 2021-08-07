@@ -1,0 +1,309 @@
+{
+  "Comment": "This is your state machine",
+  "StartAt": "Choice",
+  "States": {
+    "Choice": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.operation",
+          "StringMatches": "initial",
+          "Next": "ProgramBuild"
+        },
+        {
+          "Variable": "$.operation",
+          "StringMatches": "httpx",
+          "Next": "OperationHTTPX"
+        },
+        {
+          "Variable": "$.operation",
+          "StringMatches": "crawl",
+          "Next": "OperationCrawl"
+        },
+        {
+          "Variable": "$.operation",
+          "StringEquals": "sonar",
+          "Next": "ProgramBuild"
+        },
+        {
+          "Variable": "$.operation",
+          "StringMatches": "analysis",
+          "Next": "Athena StartQueryExecution"
+        }
+      ],
+      "Default": "FailedState"
+    },
+    "OperationCrawl": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+      "Parameters": {
+        "FunctionName": "arn:aws:lambda:us-east-1:000017942944:function:brevity-operation-crawl:$LATEST",
+        "Payload": {
+          "program.$": "$.program",
+          "operation.$": "$.operation",
+          "token.$": "$$.Task.Token"
+        }
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 6,
+          "BackoffRate": 2
+        }
+      ],
+      "Next": "CheckCrawlStatus"
+    },
+    "CheckCrawlStatus": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.operation",
+          "StringMatches": "crawl",
+          "Next": "OperationHTTPX"
+        }
+      ],
+      "Default": "FailedState"
+    },
+    "ProgramBuild": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "OutputPath": "$.Payload",
+      "Parameters": {
+        "Payload.$": "$",
+        "FunctionName": "arn:aws:lambda:us-east-1:000017942944:function:brevity-program-build:$LATEST"
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 1,
+          "BackoffRate": 2
+        }
+      ],
+      "Next": "CheckBuildStatus"
+    },
+    "CheckBuildStatus": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.statusCode",
+          "NumericEquals": 200,
+          "Next": "SonarQuery"
+        }
+      ],
+      "Default": "FailedState"
+    },
+    "SonarQuery": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "OutputPath": "$.Payload",
+      "Parameters": {
+        "Payload.$": "$",
+        "FunctionName": "arn:aws:lambda:us-east-1:000017942944:function:brevity-sonar-run:$LATEST"
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 6,
+          "BackoffRate": 2
+        }
+      ],
+      "Next": "CheckQueryStatus"
+    },
+    "CheckQueryStatus": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.statusCode",
+          "NumericEquals": 200,
+          "Next": "ReconCheck"
+        },
+        {
+          "Variable": "$.statusCode",
+          "NumericEquals": 400,
+          "Next": "FailedState"
+        }
+      ],
+      "Default": "FailedState"
+    },
+    "ReconCheck": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.operation",
+          "StringEquals": "sonar",
+          "Next": "ProcessCrawl"
+        }
+      ],
+      "Default": "OperationHTTPX"
+    },
+    "ProcessCrawl": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "OutputPath": "$.Payload",
+      "Parameters": {
+        "Payload.$": "$",
+        "FunctionName": "arn:aws:lambda:us-east-1:000017942944:function:brevity-process-crawl:$LATEST"
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 6,
+          "BackoffRate": 2
+        }
+      ],
+      "Next": "PassRecon"
+    },
+    "OperationHTTPX": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+      "Parameters": {
+        "FunctionName": "arn:aws:lambda:us-east-1:000017942944:function:brevity-operation-httpx:$LATEST",
+        "Payload": {
+          "program.$": "$.program",
+          "operation.$": "$.operation",
+          "token.$": "$$.Task.Token"
+        }
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 6,
+          "BackoffRate": 2
+        }
+      ],
+      "Next": "CheckHTTPXStatus"
+    },
+    "CheckHTTPXStatus": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.operation",
+          "StringEquals": "initial",
+          "Next": "ProcessHTTPX"
+        },
+        {
+          "Variable": "$.statusCode",
+          "NumericEquals": 400,
+          "Next": "FailedState"
+        },
+        {
+          "Variable": "$.operation",
+          "StringEquals": "httpx",
+          "Next": "ProcessHTTPX"
+        },
+        {
+          "Variable": "$.operation",
+          "StringMatches": "crawl",
+          "Next": "ProcessHTTPX"
+        }
+      ],
+      "Default": "FailedState"
+    },
+    "ProcessHTTPX": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "OutputPath": "$.Payload",
+      "Parameters": {
+        "Payload.$": "$",
+        "FunctionName": "arn:aws:lambda:us-east-1:000017942944:function:brevity-process-httpx:$LATEST"
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 6,
+          "BackoffRate": 2
+        }
+      ],
+      "Next": "CheckHTTPXOperationType"
+    },
+    "CheckHTTPXOperationType": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.operation",
+          "StringMatches": "initial",
+          "Next": "OperationCrawl"
+        },
+        {
+          "Variable": "$.operation",
+          "StringMatches": "httpx",
+          "Next": "PassRecon"
+        },
+        {
+          "Variable": "$.operation",
+          "StringMatches": "crawl",
+          "Next": "ProcessCrawl"
+        }
+      ],
+      "Default": "FailedState"
+    },
+    "PassRecon": {
+      "Type": "Pass",
+      "Next": "UpdateGlueTables"
+    },
+    "UpdateGlueTables": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "OutputPath": "$.Payload",
+      "Parameters": {
+        "Payload.$": "$",
+        "FunctionName": "arn:aws:lambda:us-east-1:000017942944:function:brevity-process-glue:$LATEST"
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 6,
+          "BackoffRate": 2
+        }
+      ],
+      "End": true
+    },
+    "FailedState": {
+      "Type": "Fail"
+    },
+    "Athena StartQueryExecution": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::athena:startQueryExecution",
+      "Parameters": {
+        "QueryString": "myQueryString",
+        "WorkGroup": "primary"
+      },
+      "End": true
+    }
+  }
+}
