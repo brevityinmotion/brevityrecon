@@ -19,22 +19,20 @@ def generateScriptNuclei(programName, inputBucketName, inputPath, outputPath):
     #fileBuffer.write("""#!/bin/bash
     fileContents = f"""#!/bin/bash
 
-# Run custom httpx script
+# Run custom nuclei script
 export HOME=/root
 export PATH=/root/go/bin:$PATH
 
 mkdir $HOME/security/raw/{programName}/nuclei
+# inputPath should resemble: $HOME/security/input/nuclei
+export NUCLEIINPUTPATH={inputPath}
 
-export HTTPXINPUTPATH={inputPath}
+# nuclei -passive -target /data/responses/ -json -output nucleilocal.txt
 
-# nuclei -passive -target /data/responses/ -output nucleilocal.txt
-
-if [ -f "$HTTPXINPUTPATH" ]; then
-    httpx -json -o $HOME/security/refined/{programName}/{programName}-httpx-{outputPath}.json -l {inputPath} -status-code -title -location -content-type -web-server -no-color -tls-probe -x GET -ip -cname -cdn -content-length -sr -srd $HOME/security/raw/{programName}/responses -timeout 1
+if [ -f "$NUCLEIINPUTPATH" ]; then
+    nuclei -passive -target {inputPath} -json -output $HOME/security/presentation/{programName}/nuclei-json/{programName}-nuclei-{outputPath}.json
 fi
 
-#aws s3 cp $HOME/security/raw/{programName}/responses/ s3://brevity-raw/responses/{programName}/
-#aws s3 cp $HOME/security/raw/{programName}/httpx/ s3://brevity-raw/httpx/{programName}/
 sh $HOME/security/run/{programName}/sync-{programName}.sh
 wait
 sh $HOME/security/run/{programName}/stepfunctions-{programName}.sh"""
