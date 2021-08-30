@@ -8,7 +8,8 @@ def retrieveSecurityTrailsDomains(rootDomain):
     secretName = "brevity-recon-apis"
     regionName = "us-east-1"
     secretRetrieved = brevitycore.core.get_secret(secretName,regionName)
-    APIKEY = secretRetrieved['securitytrails']
+    secretjson = json.loads(secretRetrieved)
+    APIKEY = secretjson['securitytrails']
     
     rootDomainStr = rootDomain[0]
     url = "https://api.securitytrails.com/v1/domain/" + rootDomainStr + "/subdomains"
