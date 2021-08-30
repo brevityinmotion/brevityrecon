@@ -1,0 +1,9 @@
+lsblk
+sudo file -s /dev/xvdf
+sudo mkfs -t xfs /dev/xvdf
+
+sudo mkdir /data
+sudo mount /dev/xvdf /data
+
+# Use this to extend the partition
+sudo xfs_growfs -d /data

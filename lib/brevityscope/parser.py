@@ -20,9 +20,12 @@ def cleanupScopeFiles(dfIn):
     return dfIn
 
 def parseRootDomains(refinedBucketPath, programName):
+    # Load existing list of program domains (includes subdomains)
     storePathInitial = refinedBucketPath + programName + '/' + programName + '-domains.csv'   
     dfAllDomains = pd.read_csv(storePathInitial)
+    # Unique the domain field which removes the multiple records related to subdomains with the same root
     allDomains = dfAllDomains['domain'].unique().tolist()
+    # Subdomains are still included in this list. The following loop will identify only the root domain and add to list
     domainEdges = []
     for val in allDomains:
         domainEdges.append(processDomainRoots(val))
@@ -32,23 +35,31 @@ def parseRootDomains(refinedBucketPath, programName):
     lstUniqueRoots = (list(setUniqueRoots)) 
     dfRoots = pd.DataFrame(lstUniqueRoots)
     dfRoots.columns = ['domain']
+    # Prepare to create a new domains root file
     storePathRoots = refinedBucketPath + programName + '/' + programName + '-domains-roots.csv'
+    # This section checks if the file already exists. If it does, it loads the existing into an initial dataframe.
     try:
         dfInitialRoots = pd.read_csv(storePathRoots)
     except:
         lstEmpty = []
         dfInitialRoots = pd.DataFrame(lstEmpty,columns=['domain'])
+    # Merge the initial dataframe with the new dataframe of root domains and add new roots to a list
     dfNewRoots = dfInitialRoots.merge(dfRoots, how ='outer',indicator=True).loc[lambda x : x['_merge']=='right_only']
+    # Convert list into a dataframe
     dfNewRoots = pd.DataFrame(dfNewRoots['domain'])
+    # Add the new roots if there are any
     if (len(dfNewRoots) > 0):
         dfRoots = dfNewRoots.append(dfInitialRoots)
+        # Drop duplicates should be irrelevant because we already compared earlier, but still, why not double check.
         dfRoots = dfRoots.drop_duplicates()
+        # Write entire file to csv, which will overwrite existing, but we accounted for existing data already.
         dfRoots.to_csv(storePathRoots, index=False)
     return dfNewRoots
 
 # Return only the root domains
 def processDomainRoots(domainName):
     ext = tldextract.extract(domainName)
+    # This checks to identify domains that are known/included gTLDS
     if (ext.suffix is not ''):
         rootDomain = ext.domain + '.' + ext.suffix
     else:
@@ -91,20 +102,23 @@ def storeAllDomains(programName, refinedBucketPath, lstDomains, programInputBuck
     except:
         lstEmpty = []
         dfExistingDomains = pd.DataFrame(lstEmpty,columns=['domain'])
+    initialLengthDomains = len(dfExistingDomains)
     print('Initial length of unique subdomains: ' + str(len(dfExistingDomains)))
     dfNewDomains = dfExistingDomains.merge(dfDomains, how ='outer',indicator=True).loc[lambda x : x['_merge']=='right_only']
     dfNewDomains = pd.DataFrame(dfNewDomains['domain'])
-    print('Length of unique subdomains after new domains added: ' + str(len(dfNewDomains)))
+    #print('Length of unique subdomains after new domains added: ' + str(len(dfNewDomains)))
     if (len(dfNewDomains) > 0):
         dfNewDomains.to_csv(storePathNew, header=False, index=False, sep='\n')
         dfDomains = dfDomains.append(dfExistingDomains)
         dfDomains = dfDomains.drop_duplicates()
         dfDomains.to_csv(storePath, index=False)
         dfDomains.to_csv(storePathUnique, header=False, index=False, sep='\n')
+        newLengthDomains = len(dfDomains)
         print('Updated length of unique subdomains: ' + str(len(dfDomains)))
         # Every time the domain all list is updated, also update the roots list
         dfDomainRoots = parseRootDomains(refinedBucketPath, programName)
-    return 'Success'
+    addLengthDomains = str(newLengthDomains - initialLengthDomains)
+    return 'Added ' + addLengthDomains + ' domains.'
     
 def storeScopeDomains(programName, refinedBucketPath, lstDomains, programInputBucketPath):
     dfDomains = pd.DataFrame(lstDomains)
