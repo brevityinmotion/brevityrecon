@@ -10,7 +10,7 @@ def prepareHttpx(programName,inputBucketName, fileName):
     
     # The first iteration of recon is only going to have a -domains-all.csv file. The second recursive iteration after the crawl will have a -urls-mod.txt file.
     if (fileName == gospiderPath):
-        inputPath = '$HOME/security/inputs/' + programName + '/' + programName + '-urls-mod.txt'
+        inputPath = '$HOME/security/inputs/' + programName + '/' + programName + '-urls-scope.txt'
         outputPath = 'crawl'
     if (fileName == diffPath):
         inputPath = '$HOME/security/inputs/' + programName + '/' + programName + '-domains-all.csv'

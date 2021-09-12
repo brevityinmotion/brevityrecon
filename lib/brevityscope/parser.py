@@ -107,6 +107,7 @@ def storeAllDomains(programName, refinedBucketPath, lstDomains, programInputBuck
     dfNewDomains = dfExistingDomains.merge(dfDomains, how ='outer',indicator=True).loc[lambda x : x['_merge']=='right_only']
     dfNewDomains = pd.DataFrame(dfNewDomains['domain'])
     #print('Length of unique subdomains after new domains added: ' + str(len(dfNewDomains)))
+    newLengthDomains = (len(dfExistingDomains))
     if (len(dfNewDomains) > 0):
         dfNewDomains.to_csv(storePathNew, header=False, index=False, sep='\n')
         dfDomains = dfDomains.append(dfExistingDomains)

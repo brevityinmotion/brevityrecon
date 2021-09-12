@@ -11,18 +11,19 @@ def retrieveSecurityTrailsDomains(rootDomain):
     secretjson = json.loads(secretRetrieved)
     APIKEY = secretjson['securitytrails']
     
-    rootDomainStr = rootDomain[0]
-    url = "https://api.securitytrails.com/v1/domain/" + rootDomainStr + "/subdomains"
-    print(url)
+    #rootDomainStr = rootDomain[0]
+    url = "https://api.securitytrails.com/v1/domain/" + rootDomain + "/subdomains"
     querystring = {"children_only":"false","include_inactive":"true"}
     headers = {"Accept": "application/json","APIKEY": APIKEY}
     # Initiate request and retrieve results
     response = requests.request("GET", url, headers=headers, params=querystring)
     # Normalizing data
     jsonInfo = response.json()
+  
     try:
         jsonSubs = jsonInfo['subdomains']
-        domainList = ['{0}.{1}'.format(sub, rootDomainStr) for sub in jsonSubs]
+        domainList = ['{0}.{1}'.format(sub, rootDomain) for sub in jsonSubs]
+        print(domainList)
         return domainList
     except:
         return 'no subdomains'

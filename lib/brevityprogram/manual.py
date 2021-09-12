@@ -105,6 +105,7 @@ pip3 install --upgrade awscli
 snap install amass
 
 # Install go tools
+GO111MODULE=on go get -v github.com/projectdiscovery/nuclei/v2/cmd/nuclei
 GO111MODULE=on go get -v github.com/projectdiscovery/httpx/cmd/httpx
 go get -u github.com/tomnomnom/unfurl
 go get -u github.com/ffuf/ffuf
