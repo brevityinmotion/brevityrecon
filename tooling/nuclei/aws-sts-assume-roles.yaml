@@ -1,0 +1,88 @@
+id: aws-bucket-list
+
+info:
+  name: Detect AWS S3 buckets with list
+  author: Brevity in Motion
+  severity: low
+  tags: aws
+
+requests:
+  - method: GET
+    path:
+      - "https://{{BaseURL}}.s3.{{region}}.amazonaws.com"
+      - "http://{{BaseURL}}.s3.{{region}}.amazonaws.com"
+    payloads:
+        region: /root/security/tools/nuclei/awsregions.txt
+    attack: sniper
+    matchers-condition: and
+    matchers:
+      - type: word
+        words:
+          - "AmazonS3"
+        part: header
+      - type: word
+        words:
+          - "<ListBucketResult"
+        part: body
+        
+
+id: gitlab-weak-login
+info:
+  name: Gitlab Weak Login
+  author: Suman_Kar
+  severity: high
+  tags: gitlab,default-login
+
+  # Gitlab blocks for 10 minutes after 5 "Invalid" attempts for valid user.
+  # So make sure, not to attempt more than 4 password for same valid user.
+
+requests:
+  - raw:
+      - |
+        POST / HTTP/1.1
+        Host: sts.us-east-1.amazonaws.com
+        Accept-Encoding: gzip, deflate
+        Content-Type: application/x-www-form-urlencoded; charset=utf-8
+        User-Agent: aws-cli/2.0.52 Python/3.7.3 Linux/5.8.0-kali1-cloud-amd64 exe/x86_64.kali.2020 command/sts.assume-role
+        
+        Action=AssumeRole&Version=2011-06-15&RoleArn=urlencode(arn:aws:iam::§aws_account§:role/§aws_role§)&RoleSessionName=sts-assume-role
+    payloads:
+      aws_account:
+        - 1234567890
+        - 1111111111
+      aws_role:
+        - awsconfigrole
+        - administrator
+
+    attack: clusterbomb
+
+    matchers-condition: and
+    matchers:
+      - type: status
+        status:
+          - 200
+
+      - type: word
+        part: header
+        words:
+          - application/json
+
+      - type: word
+        part: body
+        words:
+          - '"access_token":'
+          - '"token_type":'
+          - '"refresh_token":'
+        condition: and
+        
+
+POST / HTTP/1.1
+Host: sts.us-east-1.amazonaws.com
+Accept-Encoding: gzip, deflate
+Content-Type: application/x-www-form-urlencoded; charset=utf-8
+User-Agent: aws-cli/2.0.52 Python/3.7.3 Linux/5.8.0-kali1-cloud-amd64 exe/x86_64.kali.2020 command/sts.assume-role
+X-Amz-Date: 20210927T023955Z
+Authorization: AWS4-HMAC-SHA256 Credential=ASIAVB2JBRHDFO4EMB4T/20210927/us-east-1/sts/aws4_request, SignedHeaders=content-type;host;x-amz-date, Signature=7a36d2308233548baa04f35b53646bd8fe0e6f01e078b22e37abe2007b0e0c94
+Content-Length: 138
+Connection: close
+

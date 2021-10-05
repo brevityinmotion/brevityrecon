@@ -83,13 +83,28 @@ def processCrawl(programName, refinedBucketPath, inputBucketPath, presentationBu
     from urllib.parse import urlparse
 
     def parseUrlRoot(urlvalue):
-        cleanurl = urlparse(urlvalue).netloc
-        return cleanurl
+        try:
+            cleanurl = urlparse(urlvalue).netloc
+            return cleanurl
+        except:
+            # If urlparse due to weird characters like "[", utilize generic url to avoid downstream issues.
+            # TODO: I'm sure there is probably a better way to handle this.
+            urlvalue = "https://icicles.io"
+            cleanurl = urlparse(urlvalue).netloc
+            return cleanurl
 
     def parseUrlBase(urlvalue):
-        baseurl = urlparse(urlvalue)
-        baseurl = baseurl.scheme + '://' + baseurl.netloc + baseurl.path
-        return baseurl
+        try:
+            baseurl = urlparse(urlvalue)
+            baseurl = baseurl.scheme + '://' + baseurl.netloc + baseurl.path
+            return baseurl
+        except:
+            # If urlparse due to weird characters like "[", utilize generic url to avoid downstream issues.
+            # TODO: I'm sure there is probably a better way to handle this.
+            urlvalue = "https://icicles.io"
+            baseurl = urlparse(urlvalue)
+            baseurl = baseurl.scheme + '://' + baseurl.netloc + baseurl.path
+            return baseurl
 
     csvPath = refinedBucketPath + programName + '/' + programName + '-urls-max.txt'
     #print(csvPath)
