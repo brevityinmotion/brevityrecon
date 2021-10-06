@@ -66,20 +66,20 @@ mkdir $HOME/security/run
 mkdir $HOME/security/inputs
 
 # Update apt repositories to avoid software installation issues
-apt-get update
+yum update -y
 
 # Ensure OS and packages are fully upgraded
 #apt-get -y upgrade
 
 # Install Git
-apt-get install -y git # May already be installed
+yum install -y git # May already be installed
 
 # Install Python and Pip
-apt-get install -y python3 # Likely is already installed
-apt-get install -y python3-pip
+yum install -y python3 # Likely is already installed
+yum install -y python3-pip
 
 # Install Golang via cli
-apt-get install -y golang
+yum install -y golang
 
 echo 'export GOROOT=/usr/lib/go' >> ~/.bashrc
 echo 'export GOPATH=$HOME/go' >> ~/.bashrc
@@ -92,17 +92,18 @@ echo 'export PATH=$GOPATH/bin:$GOROOT/bin:$PATH' >> ~/.bashrc
     
 # Install aws cli
 #apt-get install -y awscli
-apt install -y unzip
-cd /$HOME/security/tools/
-curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-unzip awscliv2.zip
-./aws/install
+yum install -y unzip
+#cd /$HOME/security/tools/
+#curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+#unzip awscliv2.zip
+# Need to figure out how to make this install silent in order to leverage
+#./aws/install
 
 pip3 install --upgrade pip
 pip3 install --upgrade awscli
 
 #Install amass
-snap install amass
+#snap install amass
 
 # Install go tools
 GO111MODULE=on go get -v github.com/projectdiscovery/nuclei/v2/cmd/nuclei

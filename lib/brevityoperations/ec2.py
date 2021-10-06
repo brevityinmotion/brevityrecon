@@ -20,7 +20,7 @@ def createEC2(runOperation,programName):
      - export AWS_DEFAULT_REGION=us-east-1
      - aws s3 sync s3://brevity-inputs/config/ /home/ec2-user/security/config/
      - wait
-     - bash /home/ec2-user/security/config/bounty-startup-{runOperation}.sh"""
+     - sudo bash /home/ec2-user/security/config/bounty-startup-{runOperation}.sh"""
      
         userData = fileContents
         return userData

@@ -18,7 +18,7 @@ def lambda_handler(event, context):
     if event['program'] is None:
         return {"isBase64Encoded":False,"statusCode":400,"body":json.dumps({"error":"Missing program name."})}
     if event['operation'] is None:
-        operationName = 'axiom'
+        operationName = 'local'
     else:
         operationName = str(event['operation']) 
     
