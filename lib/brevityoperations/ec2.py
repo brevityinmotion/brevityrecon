@@ -44,7 +44,7 @@ def createEC2(runOperation,programName):
                 'DeviceName': '/dev/sdf',
                 'VirtualName': 'brevity-recon',
                 'Ebs': {
-                    'DeleteOnTermination': False,
+                    'DeleteOnTermination': True,
                     'VolumeSize': 200,
                     'VolumeType': 'gp2',
                     'KmsKeyId': brevityEBSKeyId,

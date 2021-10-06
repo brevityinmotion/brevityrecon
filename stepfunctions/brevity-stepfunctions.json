@@ -1,8 +1,8 @@
 {
   "Comment": "This is your state machine",
-  "StartAt": "Choice",
+  "StartAt": "CheckOperation",
   "States": {
-    "Choice": {
+    "CheckOperation": {
       "Type": "Choice",
       "Choices": [
         {
@@ -22,13 +22,18 @@
         },
         {
           "Variable": "$.operation",
-          "StringEquals": "sonar",
+          "StringMatches": "subs",
           "Next": "ProgramBuild"
         },
         {
           "Variable": "$.operation",
           "StringMatches": "analysis",
           "Next": "Athena StartQueryExecution"
+        },
+        {
+          "Variable": "$.operation",
+          "StringMatches": "bulk",
+          "Next": "OperationBulk"
         }
       ],
       "Default": "FailedState"
@@ -97,12 +102,12 @@
         {
           "Variable": "$.statusCode",
           "NumericEquals": 200,
-          "Next": "SonarQuery"
+          "Next": "OperationSonar"
         }
       ],
       "Default": "FailedState"
     },
-    "SonarQuery": {
+    "OperationSonar": {
       "Type": "Task",
       "Resource": "arn:aws:states:::lambda:invoke",
       "OutputPath": "$.Payload",
@@ -130,7 +135,7 @@
         {
           "Variable": "$.statusCode",
           "NumericEquals": 200,
-          "Next": "ReconCheck"
+          "Next": "OperationSecurityTrails"
         },
         {
           "Variable": "$.statusCode",
@@ -140,12 +145,34 @@
       ],
       "Default": "FailedState"
     },
+    "OperationSecurityTrails": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "OutputPath": "$.Payload",
+      "Parameters": {
+        "Payload.$": "$",
+        "FunctionName": "arn:aws:lambda:us-east-1:000017942944:function:brevity-operation-securitytrails:$LATEST"
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 6,
+          "BackoffRate": 2
+        }
+      ],
+      "Next": "ReconCheck"
+    },
     "ReconCheck": {
       "Type": "Choice",
       "Choices": [
         {
           "Variable": "$.operation",
-          "StringEquals": "sonar",
+          "StringEquals": "subs",
           "Next": "ProcessCrawl"
         }
       ],
@@ -303,6 +330,28 @@
         "QueryString": "myQueryString",
         "WorkGroup": "primary"
       },
+      "End": true
+    },
+    "OperationBulk": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "OutputPath": "$.Payload",
+      "Parameters": {
+        "Payload.$": "$",
+        "FunctionName": "arn:aws:lambda:us-east-1:000017942944:function:brevity-program-bulk:$LATEST"
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 6,
+          "BackoffRate": 2
+        }
+      ],
       "End": true
     }
   }
