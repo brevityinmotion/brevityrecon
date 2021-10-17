@@ -1,5 +1,5 @@
 #!/bin/bash
-LAMBDANAME="brevity-publish-httpx"
+LAMBDANAME="brevity-operation-sonar"
 mkdir /home/ec2-user/environment/brevityrecon/lambdas/build/$LAMBDANAME
 cp -r /home/ec2-user/environment/brevityrecon/lib/* /home/ec2-user/environment/brevityrecon/lambdas/build/$LAMBDANAME
 cp /home/ec2-user/environment/brevityrecon/lambdas/lambda_function_$LAMBDANAME.py /home/ec2-user/environment/brevityrecon/lambdas/build/$LAMBDANAME/lambda_function.py

@@ -20,6 +20,7 @@ def lambda_handler(event, context):
     inputBucketPath = _getParameters('inputBucketPath')
     programInputBucketPath = _getParameters('programInputBucketPath')
     presentationBucketPath = _getParameters('presentationBucketPath')
+    stepfunctionsArn = _getParameters('stepfunctionsArn')
     
     eventinput = json.loads(event['body'])
     
@@ -44,11 +45,10 @@ def lambda_handler(event, context):
       "operation": "{operationName}"
     }}
     '''
-
-    my_state_machine_arn = 'arn:aws:states:us-east-1:000017942944:stateMachine:brevity-recon'
+    
     client = boto3.client('stepfunctions')
     response = client.start_execution(
-        stateMachineArn=my_state_machine_arn,
+        stateMachineArn=stepfunctionsArn,
             input=stateInput
         )
     

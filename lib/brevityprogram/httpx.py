@@ -6,14 +6,14 @@ def prepareHttpx(programName,inputBucketName, fileName):
     # This url-mods.txt file is the output after processing the crawl URLs and only adding the in-scope urls and it only keeps the first url with parameters because sometimes the crawl loops through tens of thousands of blog or product type sites where the variation is a parameter vs page. Another option is to pass in the -urls-max.txt or -urls-min.txt file, but it will include out-of-scope URLs.
     gospiderPath = programName + '-urls-mod.txt'
     # If operation is initial, it will be domains-new as filename
-    diffPath = programName + '-domains-new.csv'
+    diffPath = programName + '-domains-new.txt'
     
     # The first iteration of recon is only going to have a -domains-all.csv file. The second recursive iteration after the crawl will have a -urls-mod.txt file.
     if (fileName == gospiderPath):
         inputPath = '$HOME/security/inputs/' + programName + '/' + programName + '-urls-mod.txt'
         outputPath = 'crawl'
     if (fileName == diffPath):
-        inputPath = '$HOME/security/inputs/' + programName + '/' + programName + '-domains-all.csv'
+        inputPath = '$HOME/security/inputs/' + programName + '/' + programName + '-domains-all.txt'
         outputPath = 'initial'
     
     scriptStatus = generateScriptHttpx(programName,inputBucketName, inputPath, outputPath)
@@ -35,7 +35,7 @@ mkdir $HOME/security/presentation/httpx-json
 export HTTPXINPUTPATH={inputPath}
 
 if [ -f "$HTTPXINPUTPATH" ]; then
-    httpx -json -o $HOME/security/presentation/{programName}/httpx-json/{programName}-httpx-{outputPath}.json -l {inputPath} -status-code -title -location -content-type -web-server -no-color -tls-probe -x GET -ip -cname -cdn -content-length -sr -srd $HOME/security/raw/{programName}/responses -timeout 1
+    httpx -json -o $HOME/security/presentation/httpx-json/{programName}-httpx-{outputPath}.json -l {inputPath} -status-code -title -location -content-type -web-server -no-color -tls-probe -x GET -ip -cname -cdn -content-length -sr -srd $HOME/security/raw/{programName}/responses -timeout 1
 fi
 sleep 10
 # Remove .txt from all of the files
@@ -44,13 +44,7 @@ cd $HOME/security/raw/{programName}/responses/
 for f in *.txt; do mv -- "$f" "${{f%.txt}}"; done
 sleep 10
 cd /root/security/raw/{programName}/
-# tar -cvzf {programName}-responses.tar.gz responses
 sleep 10
-# mv $HOME/security/raw/{programName}/{programName}-responses.tar.gz $HOME/security/refined/{programName}/{programName}-responses.tar.gz
-# rm -r responses
-# sleep 10
-#aws s3 cp $HOME/security/raw/{programName}/responses/ s3://brevity-raw/responses/{programName}/
-#aws s3 cp $HOME/security/raw/{programName}/httpx/ s3://brevity-raw/httpx/{programName}/
 sh $HOME/security/run/{programName}/sync-{programName}.sh
 wait
 sh $HOME/security/run/{programName}/stepfunctions-{programName}.sh"""

@@ -23,7 +23,7 @@ def retrieveSecurityTrailsDomains(rootDomain):
     try:
         jsonSubs = jsonInfo['subdomains']
         domainList = ['{0}.{1}'.format(sub, rootDomain) for sub in jsonSubs]
-        print(domainList)
+        #print(domainList)
         return domainList
     except:
         return 'no subdomains'

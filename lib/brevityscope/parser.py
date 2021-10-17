@@ -21,7 +21,7 @@ def cleanupScopeFiles(dfIn):
 
 def parseRootDomains(refinedBucketPath, programName):
     # Load existing list of program domains (includes subdomains)
-    storePathInitial = refinedBucketPath + programName + '/' + programName + '-domains.csv'   
+    storePathInitial = refinedBucketPath + programName + '/' + programName + '-domains.txt'   
     dfAllDomains = pd.read_csv(storePathInitial)
     # Unique the domain field which removes the multiple records related to subdomains with the same root
     allDomains = dfAllDomains['domain'].unique().tolist()
@@ -36,7 +36,7 @@ def parseRootDomains(refinedBucketPath, programName):
     dfRoots = pd.DataFrame(lstUniqueRoots)
     dfRoots.columns = ['domain']
     # Prepare to create a new domains root file
-    storePathRoots = refinedBucketPath + programName + '/' + programName + '-domains-roots.csv'
+    storePathRoots = refinedBucketPath + programName + '/' + programName + '-domains-roots.txt'
     # This section checks if the file already exists. If it does, it loads the existing into an initial dataframe.
     try:
         dfInitialRoots = pd.read_csv(storePathRoots)
@@ -93,11 +93,11 @@ def processBulkDomains(dfAmass):
 def storeAllDomains(programName, refinedBucketPath, lstDomains, programInputBucketPath):
     dfDomains = pd.DataFrame(lstDomains)
     print('Length of scope domains: ' + str(len(dfDomains)))
-    storePathUnique = programInputBucketPath + programName + '/' + programName + '-domains-all.csv'
-    storePathNew = programInputBucketPath + programName + '/' + programName + '-domains-new.csv'
+    storePathUnique = programInputBucketPath + programName + '/' + programName + '-domains-all.txt'
+    storePathNew = programInputBucketPath + programName + '/' + programName + '-domains-new.txt'
     dfDomains.rename({0: 'domain'}, axis=1, inplace=True)
     try:
-        storePath = refinedBucketPath + programName + '/' + programName + '-domains.csv'
+        storePath = refinedBucketPath + programName + '/' + programName + '-domains.txt'
         dfExistingDomains = pd.read_csv(storePath)
     except:
         lstEmpty = []
@@ -124,7 +124,7 @@ def storeAllDomains(programName, refinedBucketPath, lstDomains, programInputBuck
 def storeScopeDomains(programName, refinedBucketPath, lstDomains, programInputBucketPath):
     dfDomains = pd.DataFrame(lstDomains)
     print('Length of scope domains: ' + str(len(dfDomains)))
-    storePathScope = refinedBucketPath + programName + '/' + programName + '-domains-scope.csv'
+    storePathScope = refinedBucketPath + programName + '/' + programName + '-domains-scope.txt'
     dfDomains.rename({0: 'domain'}, axis=1, inplace=True)
     print('Length of scope domains: ' + str(len(dfDomains)))
     try:

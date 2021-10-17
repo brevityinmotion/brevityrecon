@@ -33,6 +33,7 @@ def processHTTPXOld(programName, rawBucketPath, refinedBucketPath, programInputB
     return df
     
 def processHttpx(programName, refinedBucketPath, inputBucketPath, presentationBucketPath, operationName, programInputBucketPath):
+    # This is the file that gets created from the output of HTTPX - either initial or crawl as the operation
     fileName = programName + '-httpx-' + operationName + '.json'
     presentationFilePath = presentationBucketPath + 'httpx-json/' + fileName
     
@@ -43,7 +44,7 @@ def processHttpx(programName, refinedBucketPath, inputBucketPath, presentationBu
         storePathUrl = programInputBucketPath + programName + '/' + programName + '-httpx.csv'
         df.to_csv(storePathUrl, header=False, index=False, sep='\n')
     
-        storePathUrl = programInputBucketPath + programName + '/' + programName + '-urls-base.csv'
+        storePathUrl = programInputBucketPath + programName + '/' + programName + '-urls-base.txt'
         dfUrls = df.drop_duplicates(subset=['url'])
         dfUrls['url'].to_csv(storePathUrl, header=False, index=False, sep='\n')
     
@@ -61,6 +62,7 @@ def processHttpx(programName, refinedBucketPath, inputBucketPath, presentationBu
     df['domain'] = df['url'].apply(_parseUrlRoot)
     df['baseurl'] = df['url'].apply(_parseUrlBase)
     fileOutputName = programName + '-httpx.json'
+    fileOutputNameUrls = programName + '-urls-mod.txt'
     outputPath = presentationBucketPath + 'httpx/' + fileOutputName
     
     # Check if there is already output so that it is not overwritten
@@ -74,8 +76,8 @@ def processHttpx(programName, refinedBucketPath, inputBucketPath, presentationBu
     df.to_json(outputPath, orient='records', lines=True)
 
     if (operationName == 'initial'):
-        fileOutputCrawl = programName + '-httpx-crawl.csv'
-        storePathUrl = inputBucketPath + programName + '/' + fileOutputName
+        #fileOutputCrawl = programName + '-httpx-crawl.csv'
+        storePathUrl = inputBucketPath + 'programs/' + programName + '/' + fileOutputNameUrls
         df['url'].to_csv(storePathUrl, header=False, index=False, sep='\n')
     return 'Success'
     
@@ -152,7 +154,7 @@ def publishUrls(programName, refinedBucketPath, presentationBucketPath):
 def removeOutScope(programName, refinedBucketPath, inputBucketPath, presentationBucketPath):
     
     programPlatform, inviteType, listscopein, listscopeout, ScopeInURLs, ScopeInGithub, ScopeInWild, ScopeInGeneral, ScopeInIP, ScopeOutURLs, ScopeOutGithub, ScopeOutWild, ScopeOutGeneral, ScopeOutIP = brevityprogram.dynamodb.getProgramInfo(programName)
-    domainScopePath = refinedBucketPath + programName + '/' + programName + '-domains-scope.csv'
+    domainScopePath = refinedBucketPath + programName + '/' + programName + '-domains-scope.txt'
     
     urlPath = presentationBucketPath + 'httpx/' + programName + '-httpx.json'
     dfScopeDomains = pd.read_csv(domainScopePath, header=None)

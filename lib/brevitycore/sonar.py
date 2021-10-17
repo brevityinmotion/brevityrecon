@@ -11,7 +11,7 @@ from dynamodb_json import json_util as dynjson
 # TO-DO: This function may no longer be used. Delete if not being utilized.
 def sonarGenerateSubdomains(programName, refinedBucketPath, ATHENA_DB, ATHENA_BUCKET, ATHENA_TABLE):
     # Retrieve the input data to process from the list of domains
-    storePath = refinedBucketPath + programName + '/' + programName + '-domains-roots.csv'   
+    storePath = refinedBucketPath + programName + '/' + programName + '-domains-roots.txt'   
     dfDomainRoots = pd.read_csv(storePath)
     # Prepare the domain roots for the query
     dfDomainRoots['athenaquery'] = "'%." + dfDomainRoots['domain'] + "'"

@@ -1,6 +1,7 @@
 # Custom added
 Python-3.8*
 lambdas/build*
+tools/nuclei/*
 
 # Original
 *.swp

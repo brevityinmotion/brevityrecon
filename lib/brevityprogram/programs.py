@@ -87,7 +87,7 @@ aws s3 sync s3://brevity-inputs/tools/ $HOME/security/tools/
 aws s3 cp --recursive $HOME/security/raw/{programName}/responses/ s3://brevity-raw/responses/{programName}/
 aws s3 cp --recursive $HOME/security/raw/{programName}/httpx/ s3://brevity-raw/httpx/{programName}/
 aws s3 cp --recursive $HOME/security/raw/{programName}/crawl/ s3://brevity-raw/crawl/{programName}/
-aws s3 cp --recursive $HOME/security/presentation/{programName}/httpx-json/ s3://brevity-data/presentation/httpx-json/
+aws s3 cp --recursive $HOME/security/presentation/httpx-json/ s3://brevity-data/presentation/httpx-json/
 aws s3 cp --recursive $HOME/security/presentation/{programName}/httpx/ s3://brevity-data/presentation/httpx/
 aws s3 cp --recursive $HOME/security/presentation/{programName}/nuclei/ s3://brevity-data/presentation/nuclei/"""
     fileBuffer.write(fileContents)

@@ -1,7 +1,7 @@
 import json, io
 import brevitycore.core
 
-def generateScriptGoSpider(programName, inputBucketName):
+def generateScriptPhoton(programName, inputBucketName):
     fileBuffer = io.StringIO()
     fileContents = f"""#!/bin/bash
 
@@ -41,7 +41,7 @@ sh $HOME/security/run/{programName}/stepfunctions-{programName}.sh"""
     objectBuffer.close()
     return status
 
-def generateInstallScriptGoSpider(inputBucketName):
+def generateInstallScriptPhoton(inputBucketName):
     # Load AWS access keys for s3 synchronization
     secretName = 'brevity-aws-recon'
     regionName = 'us-east-1'

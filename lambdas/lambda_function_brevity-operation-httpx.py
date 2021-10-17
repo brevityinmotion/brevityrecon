@@ -28,7 +28,7 @@ def lambda_handler(event, context):
     
     #fileName = 's3://' + inputBucketName + '/programs/' + programName + '/' + programName + '-domains-new.csv'
     if (operationName == 'initial'):
-        fileName = programName + '-domains-new.csv'
+        fileName = programName + '-domains-new.txt'
     else:
         fileName = programName + '-urls-mod.txt'
     
