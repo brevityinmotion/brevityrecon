@@ -91,11 +91,14 @@ def processBulkDomains(dfAmass):
 # This code is so confusing, but it does somehow work. I will re-visit this to provide better documentation and cleanup around the intent of the various file inputs and outputs.
 # If there are any logic flaws in the code, they are probably somewhere in here.
 def storeAllDomains(programName, refinedBucketPath, lstDomains, programInputBucketPath):
+    # Load a list of domains into a pandas dataframe
     dfDomains = pd.DataFrame(lstDomains)
+    # How many domains initially
     print('Length of scope domains: ' + str(len(dfDomains)))
     storePathUnique = programInputBucketPath + programName + '/' + programName + '-domains-all.txt'
     storePathNew = programInputBucketPath + programName + '/' + programName + '-domains-new.txt'
     dfDomains.rename({0: 'domain'}, axis=1, inplace=True)
+    # Check if a list of domains already exists, if so, include these.
     try:
         storePath = refinedBucketPath + programName + '/' + programName + '-domains.txt'
         dfExistingDomains = pd.read_csv(storePath)
@@ -104,6 +107,7 @@ def storeAllDomains(programName, refinedBucketPath, lstDomains, programInputBuck
         dfExistingDomains = pd.DataFrame(lstEmpty,columns=['domain'])
     initialLengthDomains = len(dfExistingDomains)
     print('Initial length of unique subdomains: ' + str(len(dfExistingDomains)))
+    # Merge list of domains passed to function with the original domains from program-domains.txt
     dfNewDomains = dfExistingDomains.merge(dfDomains, how ='outer',indicator=True).loc[lambda x : x['_merge']=='right_only']
     dfNewDomains = pd.DataFrame(dfNewDomains['domain'])
     #print('Length of unique subdomains after new domains added: ' + str(len(dfNewDomains)))

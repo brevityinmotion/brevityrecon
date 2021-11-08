@@ -151,24 +151,59 @@ def publishUrls(programName, refinedBucketPath, presentationBucketPath):
     dfAllDomains.to_csv(presentationPath, columns=['url','domain','baseurl','program'], index=False)
     return 'URLs successfully published'
     
+#def inScopeOnly(programName, refinedBucketPath, inputBucketPath, presentationBucketPath):
+    
+#    programPlatform, inviteType, listscopein, listscopeout, ScopeInURLs, ScopeInGithub, ScopeInWild, ScopeInGeneral, ScopeInIP, ScopeOutURLs, ScopeOutGithub, ScopeOutWild, ScopeOutGeneral, ScopeOutIP = brevityprogram.dynamodb.getProgramInfo(programName)
+#    domainScopePath = refinedBucketPath + programName + '/' + programName + '-domains-scope.txt'
+#    urlPath = presentationBucketPath + 'httpx/' + programName + '-httpx.json'
+
+
+#    programPlatform, inviteType, listscopein, listscopeout, ScopeInURLs, ScopeInGithub, ScopeInWild, ScopeInGeneral, ScopeInIP, ScopeOutURLs, ScopeOutGithub, ScopeOutWild, ScopeOutGeneral, ScopeOutIP = brevityprogram.dynamodb.getProgramInfo(programName)
+#    storeOutPathUrl = inputBucketPath + 'programs/' + programName + '/' + programName + '-urls-in.txt'
+#    urlPath = refinedBucketPath + programName + '/' + programName + '-spider-urls.csv'
+#    dfAllURLs = pd.read_csv(urlPath)#, lines=True)
+#    print('Length before in-scope-only: ' + str(len(dfAllURLs)))
+#    dfOutScopeURLs = dfAllURLs[~dfAllURLs.domain.isin(ScopeOutGeneral)]
+#    print('Length after removing out-of-scope: ' + str(len(dfOutScopeURLs)))
+#    dfOutScopeURLs['url'].to_csv(storeOutPathUrl, header=None, index=False, sep='\n')
+#    return str(len(dfOutScopeURLs))
+
+
+
+#    dfScopeDomains = pd.read_csv(domainScopePath, header=None)
+#    dfScopeDomains.rename({0: 'domain'}, axis=1, inplace=True)
+#    lstScopeDomains = dfScopeDomains.domain.tolist()
+#    dfAllURLs = pd.read_json(urlPath, lines=True)
+
+#    storePathUrl = inputBucketPath + 'programs/' + programName + '/' + programName + '-urls-scope.txt'
+#    dfScopeURLs = dfAllURLs[dfAllURLs.domain.isin(lstScopeDomains)]
+#    print('dfScopeURLs length: ' + str(len(dfScopeURLs)))
+#    dfCleanedURLs = dfScopeURLs[~dfScopeURLs.domain.isin(ScopeOutGeneral)]
+
+#    dfCleanedURLs = dfCleanedURLs.append(dfScopeURLs)
+#    dfCleanedURLs = dfCleanedURLs.drop_duplicates(subset='baseurl')
+#    dfCleanedURLs['url'].to_csv(storePathUrl, header=None, index=False, sep='\n')
+#    urlScope = str(len(dfCleanedURLs))
+#    return urlScope
+
 def removeOutScope(programName, refinedBucketPath, inputBucketPath, presentationBucketPath):
-    
     programPlatform, inviteType, listscopein, listscopeout, ScopeInURLs, ScopeInGithub, ScopeInWild, ScopeInGeneral, ScopeInIP, ScopeOutURLs, ScopeOutGithub, ScopeOutWild, ScopeOutGeneral, ScopeOutIP = brevityprogram.dynamodb.getProgramInfo(programName)
-    domainScopePath = refinedBucketPath + programName + '/' + programName + '-domains-scope.txt'
+    storeOutPathUrl = inputBucketPath + 'programs/' + programName + '/' + programName + '-urls-mod.txt'
+    storeInPathUrl = inputBucketPath + 'programs/' + programName + '/' + programName + '-urls-in.txt'
+    urlPath = refinedBucketPath + programName + '/' + programName + '-spider-urls.csv'
+    dfAllURLs = pd.read_csv(urlPath)#, lines=True)
     
-    urlPath = presentationBucketPath + 'httpx/' + programName + '-httpx.json'
-    dfScopeDomains = pd.read_csv(domainScopePath, header=None)
-    dfScopeDomains.rename({0: 'domain'}, axis=1, inplace=True)
-    lstScopeDomains = dfScopeDomains.domain.tolist()
-    dfAllURLs = pd.read_json(urlPath, lines=True)
-
-    storePathUrl = inputBucketPath + 'programs/' + programName + '/' + programName + '-urls-scope.txt'
-    dfScopeURLs = dfAllURLs[dfAllURLs.domain.isin(lstScopeDomains)]
-    print('dfScopeURLs length: ' + str(len(dfScopeURLs)))
-    dfCleanedURLs = dfScopeURLs[~dfScopeURLs.domain.isin(ScopeOutGeneral)]
-
-    dfCleanedURLs = dfCleanedURLs.append(dfScopeURLs)
-    dfCleanedURLs = dfCleanedURLs.drop_duplicates(subset='baseurl')
-    dfCleanedURLs['url'].to_csv(storePathUrl, header=None, index=False, sep='\n')
-    urlScope = str(len(dfCleanedURLs))
-    return urlScope    
+    # Remove explicitly out-of-scope items
+    print('Length before removing out-of-scope: ' + str(len(dfAllURLs)))
+    dfOutScopeURLs = dfAllURLs[~dfAllURLs.domain.isin(ScopeOutGeneral)]
+    print('Length after removing out-of-scope: ' + str(len(dfOutScopeURLs)))
+    dfOutScopeURLs['url'].to_csv(storeOutPathUrl, header=None, index=False, sep='\n')
+    
+    # Generate a list of only explicitly in-scope urls.
+    print('Length before in-scope-only: ' + str(len(dfOutScopeURLs)))
+    print('ScopeInGeneral: ' + ScopeInGeneral)
+    dfInScopeURLs = dfOutScopeURLs[dfOutScopeURLs.domain.isin(ScopeInGeneral)]
+    print('Length after removing out-of-scope: ' + str(len(dfInScopeURLs)))
+    dfInScopeURLs['url'].to_csv(storeInPathUrl, header=None, index=False, sep='\n')
+    
+    return str(len(dfOutScopeURLs))
