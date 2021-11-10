@@ -108,8 +108,13 @@ def storeAllDomains(programName, refinedBucketPath, lstDomains, programInputBuck
     initialLengthDomains = len(dfExistingDomains)
     print('Initial length of unique subdomains: ' + str(len(dfExistingDomains)))
     # Merge list of domains passed to function with the original domains from program-domains.txt
+  #  try:
+    print(str(len(dfExistingDomains)))
+    print(str(len(dfDomains)))
     dfNewDomains = dfExistingDomains.merge(dfDomains, how ='outer',indicator=True).loc[lambda x : x['_merge']=='right_only']
     dfNewDomains = pd.DataFrame(dfNewDomains['domain'])
+#    except:
+#        dfNewDomains = pd.DataFrame(dfNewDomains['domain'])
     #print('Length of unique subdomains after new domains added: ' + str(len(dfNewDomains)))
     newLengthDomains = (len(dfExistingDomains))
     if (len(dfNewDomains) > 0):

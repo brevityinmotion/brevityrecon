@@ -58,7 +58,11 @@ def sonarLoadSubdomains(programName, refinedBucketPath, programInputBucketPath):
     dfhosts = dfhosts.rename(columns={'name': 'subdomain'})
     # Generate a list of all of the unique domains while parsing potentially missing child domains
     allDomains = brevityscope.parser.processBulkDomains(dfhosts)
-    # Store the unique list of domains into S3 - Creates file - programName-domains.csv
-    sonarStoreStatus = brevityscope.parser.storeAllDomains(programName, refinedBucketPath, allDomains, programInputBucketPath)
-    sonarScopeStatus = brevityscope.parser.storeScopeDomains(programName, refinedBucketPath, allDomains, programInputBucketPath)
+    if len(allDomains) > 0:
+        print(str(len(allDomains)))
+        # Store the unique list of domains into S3 - Creates file - programName-domains.csv
+        sonarStoreStatus = brevityscope.parser.storeAllDomains(programName, refinedBucketPath, allDomains, programInputBucketPath)
+        sonarScopeStatus = brevityscope.parser.storeScopeDomains(programName, refinedBucketPath, allDomains, programInputBucketPath)
+    else:
+        sonarStoreStatus = "No domains returned from Sonar"
     return sonarStoreStatus
