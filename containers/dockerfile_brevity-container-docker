@@ -1,0 +1,54 @@
+#FROM public.ecr.aws/lambda/python:3.8
+#FROM public.ecr.aws/eks-distro-build-tooling/eks-distro-minimal-base-docker-client:latest
+#FROM public.ecr.aws/ubuntu/ubuntu:latest
+FROM public.ecr.aws/amazonlinux/amazonlinux:latest
+#https://docs.aws.amazon.com/lambda/latest/dg/runtimes-images.html
+#FROM public.ecr.aws/lambda/provided:al2
+
+WORKDIR /home/ec2-user/
+#COPY lambda_function.py ${LAMBDA_TASK_ROOT}
+
+#COPY bootstrap ${LAMBDA_RUNTIME_DIR}
+
+COPY lambda_function.py lambda_function.py
+RUN chmod 755 lambda_function.py
+# Install the function's dependencies using file requirements.txt
+COPY requirements.txt requirements.txt
+COPY run.sh run.sh
+RUN chmod 755 run.sh
+
+#COPY requirements.txt ${LAMBDA_TASK_ROOT}
+#RUN apt-get update
+#RUN apt-get install -y python3.9
+#RUN apt-get install -y python3-pip
+
+RUN yum update -y
+RUN yum install -y python3-pip
+
+RUN pip3 install -r requirements.txt
+#RUN pip3 install -r requirements.txt --target "${LAMBDA_TASK_ROOT}"
+
+# Install docker
+# RUN curl -fsSL get.docker.com -o get-docker.sh
+# RUN sh get-docker.sh
+#RUN apt-get install -y curl
+#RUN curl -sSL https://get.docker.com/ | sh
+RUN amazon-linux-extras install docker
+#RUN service docker start
+#RUN usermod -a -G docker ec2-user
+#RUN chmod -R 777 /brevity
+#ENTRYPOINT ["${LAMBDA_TASK_ROOT}/lambda_function.py"]
+
+# Set the CMD to your handler (could also be done as a parameter override outside of the Dockerfile)
+#CMD [ "run.sh" ] 
+ENTRYPOINT ["/home/ec2-user/run.sh"]
+
+#WORKDIR /var/runtime/
+#COPY bootstrap bootstrap
+#RUN chmod 755 bootstrap
+
+#WORKDIR /var/task/
+#COPY function.sh function.sh
+#RUN chmod 755 function.sh
+
+#CMD [ "function.sh.handler" ]

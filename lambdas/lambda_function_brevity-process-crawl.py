@@ -27,7 +27,7 @@ def lambda_handler(event, context):
     programName = str(event['program'])
     
     processCrawlStatus = brevityscope.process.processCrawl(programName, refinedBucketPath, inputBucketPath, presentationBucketPath, operationName, programInputBucketPath)
-    processUrlScopeStatus = brevityscope.process.removeOutScope(programName, refinedBucketPath, inputBucketPath, presentationBucketPath)
+ #   processUrlScopeStatus = brevityscope.process.removeOutScope(programName, refinedBucketPath, inputBucketPath, presentationBucketPath)
     
     responseData = {
         'status': str(processCrawlStatus),

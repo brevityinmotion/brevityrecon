@@ -96,6 +96,7 @@ def storeAllDomains(programName, refinedBucketPath, lstDomains, programInputBuck
     # How many domains initially
     print('Length of scope domains: ' + str(len(dfDomains)))
     storePathUnique = programInputBucketPath + programName + '/' + programName + '-domains-all.txt'
+    # This file will be created to store a list of newly discovered domains
     storePathNew = programInputBucketPath + programName + '/' + programName + '-domains-new.txt'
     dfDomains.rename({0: 'domain'}, axis=1, inplace=True)
     # Check if a list of domains already exists, if so, include these.

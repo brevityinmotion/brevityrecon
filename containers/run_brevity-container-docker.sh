@@ -1,0 +1,1 @@
+python lamdbda_function.py
