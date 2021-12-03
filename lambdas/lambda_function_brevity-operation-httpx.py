@@ -30,7 +30,7 @@ def lambda_handler(event, context):
     if (operationName == 'initial'):
         fileName = programName + '-domains-new.txt'
     else:
-        fileName = programName + '-urls-mod.txt'
+        fileName = programName + '-urls-base.txt'
     
     httpxStatus = brevityprogram.httpx.prepareHttpx(programName, inputBucketName, fileName)
     # Create installation file (bounty-startup-httpx.sh) to run on ephemeral server at startup
@@ -54,7 +54,10 @@ def lambda_handler(event, context):
     awsAccessKeyId = secretjson['AWS_ACCESS_KEY_ID']
     awsSecretKey = secretjson['AWS_SECRET_ACCESS_KEY']
     
-    droplet = brevityoperations.droplet.loadDropletInfo(accessToken,dropletName)
+    try:
+        droplet = brevityoperations.droplet.loadDropletInfo(accessToken,dropletName)
+    except:
+        droplet = 'NotFound'
     if droplet == 'NotFound':
         droplet = brevityoperations.droplet.createDroplet(accessToken,dropletName,runOperation,programName,awsAccessKeyId,awsSecretKey)
         dropletStatus = brevityoperations.droplet.getDropletStatus(droplet)

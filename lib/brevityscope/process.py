@@ -60,7 +60,10 @@ def processHttpx(programName, refinedBucketPath, inputBucketPath, presentationBu
     presentationFilePath = presentationBucketPath + 'httpx-json/' + fileName
     
     df = pd.read_json(presentationFilePath, lines=True)
-    df['program'] = programName
+    
+    df = processEnrichURLs(programName, df)
+    
+#    df['program'] = programName
     
     if (operationName == 'initial'):
         storePathUrl = programInputBucketPath + programName + '/' + programName + '-httpx.csv'
@@ -70,8 +73,8 @@ def processHttpx(programName, refinedBucketPath, inputBucketPath, presentationBu
         dfUrls = df.drop_duplicates(subset=['url'])
         dfUrls['url'].to_csv(storePathUrl, header=False, index=False, sep='\n')
 
-    df['domain'] = df['url'].apply(parseUrlRoot)
-    df['baseurl'] = df['url'].apply(parseUrlBase)
+#    df['domain'] = df['url'].apply(parseUrlRoot)
+#    df['baseurl'] = df['url'].apply(parseUrlBase)
     fileOutputName = programName + '-httpx.json'
     fileOutputNameUrls = programName + '-urls-mod.txt'
     outputPath = presentationBucketPath + 'httpx/' + fileOutputName
@@ -110,21 +113,16 @@ def publishUrls(programName, refinedBucketPath, presentationBucketPath):
     dfAllDomains.to_csv(presentationPath, columns=['url','domain','baseurl','program'], index=False)
     return 'URLs successfully published'
 
-def processCrawl(programName, refinedBucketPath, inputBucketPath, presentationBucketPath, operationName, programInputBucketPath):
-
+def processEnrichURLs(programName, dfAllURLs): # dataframe requires domain column
+    
     # Retrieve the program information from database
     programPlatform, inviteType, listscopein, listscopeout, ScopeInURLs, ScopeInGithub, ScopeInWild, ScopeInGeneral, ScopeInIP, ScopeOutURLs, ScopeOutGithub, ScopeOutWild, ScopeOutGeneral, ScopeOutIP = brevityprogram.dynamodb.getProgramInfo(programName)
- 
-    # Open the output file from the crawl. It is a raw list of URLs.
-    csvPath = refinedBucketPath + programName + '/' + programName + '-urls-max.txt'
-    dfAllURLs = pd.read_csv(csvPath, header=None, names=['url'], sep='\n')
-
-    # Enrich the URL fields within the dataframe
+    
     dfAllURLs['domain'] = dfAllURLs['url'].apply(parseUrlRoot)
     dfAllURLs['baseurl'] = dfAllURLs['url'].apply(parseUrlBase)
     dfAllURLs['program'] = programName
     
-     # Scope mapper
+    # Scope mapper
     mapperIn = {True: 'in', False: 'other'}  # in = within the defined scope
     mapperOut = {True: 'out', False: 'in'} # out = explicitly out of scope
     mapperWild = {True: 'wild', False: 'out'} # wild - within the wildcard scope
@@ -158,6 +156,58 @@ def processCrawl(programName, refinedBucketPath, inputBucketPath, presentationBu
     # Create a new column and assign the values specific to the conditions.
     # TODO - This could potentially miss items since it is a select. Need to perform some searches on whether or not scope column is populated after using this for a while.
     dfAllURLs['scope'] = np.select(conditions, values)
+    return dfAllURLs
+
+def processCrawl(programName, refinedBucketPath, inputBucketPath, presentationBucketPath, operationName, programInputBucketPath):
+
+    # Retrieve the program information from database
+    programPlatform, inviteType, listscopein, listscopeout, ScopeInURLs, ScopeInGithub, ScopeInWild, ScopeInGeneral, ScopeInIP, ScopeOutURLs, ScopeOutGithub, ScopeOutWild, ScopeOutGeneral, ScopeOutIP = brevityprogram.dynamodb.getProgramInfo(programName)
+ 
+    # Open the output file from the crawl. It is a raw list of URLs.
+    csvPath = refinedBucketPath + programName + '/' + programName + '-urls-max.txt'
+    dfAllURLs = pd.read_csv(csvPath, header=None, names=['url'], sep='\n')
+
+    dfAllURLs = processEnrichURLs(programName, dfAllURLs)
+
+#    # Enrich the URL fields within the dataframe
+#    dfAllURLs['domain'] = dfAllURLs['url'].apply(parseUrlRoot)
+#    dfAllURLs['baseurl'] = dfAllURLs['url'].apply(parseUrlBase)
+#    dfAllURLs['program'] = programName
+#    
+#    # Scope mapper
+#    mapperIn = {True: 'in', False: 'other'}  # in = within the defined scope
+#    mapperOut = {True: 'out', False: 'in'} # out = explicitly out of scope
+#    mapperWild = {True: 'wild', False: 'out'} # wild - within the wildcard scope
+#     # other = not in scope but not explicitly excluded
+#    
+#    # This checks to determine whether a url is explicitly defined as out-of-scope
+#    dfAllURLs['scopeOut'] = dfAllURLs.domain.str.lower().isin([x.lower() for x in ScopeOutGeneral]).map(mapperOut)
+#    # This checks to determine whether a url is explicitly defined as in-scope
+#    dfAllURLs['scopeIn'] = dfAllURLs.domain.str.lower().isin([x.lower() for x in ScopeInGeneral]).map(mapperIn)
+#    
+#    # This section checks for wildcard scopes and determines whether a url is included within the wildcard scope
+#    lstWild = []
+#    for wild in ScopeInWild:
+#        wild = re.sub(r'^.*?\*\.', '', wild)
+#        lstWild.append(wild.lower())
+#        print(wild)
+#    
+#    dfAllURLs['scopeWild'] = dfAllURLs.domain.str.lower().str.endswith(tuple(lstWild)).map(mapperWild)
+#    
+#    # This section creates a normalized scope field to track in, out, wild, or other
+#    conditions = [
+#        (dfAllURLs['scopeOut'] == 'out'),
+#        (dfAllURLs['scopeIn'] == 'in') & (dfAllURLs['scopeOut'] != 'out'),
+#        (dfAllURLs['scopeWild'] == 'wild') & (dfAllURLs['scopeIn'] != 'in') & (dfAllURLs['scopeOut'] != 'out'),
+#        (dfAllURLs['scopeIn'] == 'other') & (dfAllURLs['scopeWild'] != 'wild') & (dfAllURLs['scopeIn'] != 'in') & (dfAllURLs['scopeOut'] != 'out')
+#    ]
+#    
+#    # Each of these values maps to the equivalent condition listed
+#    values = ['out', 'in', 'wild', 'other']                                                                           
+#    
+#    # Create a new column and assign the values specific to the conditions.
+#    # TODO - This could potentially miss items since it is a select. Need to perform some searches on whether or not scope column is populated after using this for a while.
+#    dfAllURLs['scope'] = np.select(conditions, values)
 
     # File path that does not contain explicitly out-of-scope items
     storeModPathUrl = inputBucketPath + 'programs/' + programName + '/' + programName + '-urls-mod.txt'
@@ -183,6 +233,6 @@ def processCrawl(programName, refinedBucketPath, inputBucketPath, presentationBu
 
     # Need to add a variable for this
     presentationPath = 's3://brevity-data/presentation/urls/' + programName + '-urls-info.csv'
-    dfAllURLs.to_csv(presentationPath, columns=['url','domain','baseurl','program', 'scope'], index=False)
+    dfAllURLs.to_csv(presentationPath, columns=['url','domain','baseurl','program','scope'], index=False)
     
     return 'URLs successfully published'

@@ -4,13 +4,13 @@ import brevitycore.core
 def prepareHttpx(programName,inputBucketName, fileName):
     
     # This url-mods.txt file is the output after processing the crawl URLs and only adding the in-scope urls and it only keeps the first url with parameters because sometimes the crawl loops through tens of thousands of blog or product type sites where the variation is a parameter vs page. Another option is to pass in the -urls-max.txt or -urls-min.txt file, but it will include out-of-scope URLs.
-    gospiderPath = programName + '-urls-mod.txt'
+    gospiderPath = programName + '-urls-base.txt'
     # If operation is initial, it will be domains-new as filename
     diffPath = programName + '-domains-new.txt'
     
     # The first iteration of recon is only going to have a -domains-all.csv file. The second recursive iteration after the crawl will have a -urls-mod.txt file.
     if (fileName == gospiderPath):
-        inputPath = '$HOME/security/inputs/' + programName + '/' + programName + '-urls-mod.txt'
+        inputPath = '$HOME/security/inputs/' + programName + '/' + programName + '-urls-base.txt'
         outputPath = 'crawl'
     if (fileName == diffPath):
         inputPath = '$HOME/security/inputs/' + programName + '/' + programName + '-domains-all.txt'
