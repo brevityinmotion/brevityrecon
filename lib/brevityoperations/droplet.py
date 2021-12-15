@@ -93,7 +93,7 @@ def createDropletManual(accessToken,dropletName,runOperation,programName,awsAcce
                                    name=dropletName,
                                    region='nyc3', # New York 2
                                    image='ubuntu-20-04-x64', # Ubuntu 20.04 x64
-                                   size_slug='s-8vcpu-16gb',  # 1GB RAM, 1 vCPU
+                                   size_slug='s-1vcpu-1gb',  # s-8vcpu-16gb
                                    ssh_keys=keys,
                                    backups=False,
                                    user_data=userData)

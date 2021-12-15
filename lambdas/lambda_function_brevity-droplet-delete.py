@@ -16,8 +16,8 @@ def lambda_handler(event, context):
         dropletName = dropletvalue.name
         # It would be smart to add a filter in this for the future to validate droplet naming convention as well in case there is a droplet that should not be deleted when shutdown.
         if dropletState == 'off':
-            dropletvalue.destroy()
-    
+            if dropletName.startswith('brevity-'):
+                dropletvalue.destroy()
     return {
         'statusCode': 200
     }
