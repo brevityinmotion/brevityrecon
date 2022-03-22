@@ -132,7 +132,8 @@ apt-get install -y awscli
 
 # Install go tools
 go install -v github.com/projectdiscovery/interactsh/cmd/interactsh-server@latest
-go install -v github.com/projectdiscovery/interactsh/cmd/interactsh-client@latest"""
+go install -v github.com/projectdiscovery/interactsh/cmd/interactsh-client@latest
+go install -v github.com/projectdiscovery/notify/cmd/notify@latest"""
     fileBuffer.write(fileContents)
     objectBuffer = io.BytesIO(fileBuffer.getvalue().encode())
 

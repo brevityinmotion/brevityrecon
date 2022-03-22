@@ -60,3 +60,24 @@ def lambda_handler(event, context):
         'statusCode': 200,
         'body': json.dumps(responseData)
     }
+    
+    
+def update_ip_timestamp(programName,reconDate):
+    dynamodb = boto3.resource('dynamodb')
+    table = dynamodb.Table('bugbounty')
+    table.update_item(
+        Key={
+                'ProgramName' : programName,
+            },
+        UpdateExpression="set latestRecon = :g",
+        ExpressionAttributeValues={
+                ':g': reconDate
+            },
+        ReturnValues="UPDATED_NEW"
+        )
+    return 'Program platform successfully added.'
+    
+    
+    # Insert recon timestamp into DynamoDB to track reconnaisance
+    reconDate = str(datetime.datetime.now().date().isoformat())
+    timeStatus = brevityprogram.dynamodb.update_ip_timestamp(programName,reconDate)
