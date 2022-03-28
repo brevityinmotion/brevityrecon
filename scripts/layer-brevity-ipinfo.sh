@@ -12,6 +12,8 @@ cd $NEWLAYER
 virtualenv v-env
 source ./v-env/bin/activate
 ## Install packages here
+pip install pandas
+pip install requests
 pip install ipinfo
 #pip install numpy
 deactivate

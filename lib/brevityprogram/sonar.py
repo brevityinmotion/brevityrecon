@@ -8,20 +8,6 @@ import brevityprogram.dynamodb
 import brevityscope.parser
 from dynamodb_json import json_util as dynjson
 
-# TO-DO: This function may no longer be used. Delete if not being utilized.
-def sonarGenerateSubdomains(programName, refinedBucketPath, ATHENA_DB, ATHENA_BUCKET, ATHENA_TABLE):
-    # Retrieve the input data to process from the list of domains
-    storePath = refinedBucketPath + programName + '/' + programName + '-domains-roots.txt'   
-    dfDomainRoots = pd.read_csv(storePath)
-    # Prepare the domain roots for the query
-    dfDomainRoots['athenaquery'] = "'%." + dfDomainRoots['domain'] + "'"
-    searchDomains = dfDomainRoots['athenaquery'].tolist()
-    searchDomainString = ' OR name LIKE '.join(searchDomains)
-    query = "SELECT * FROM %s WHERE name LIKE %s AND date = (SELECT MAX(date) from %s);" % (ATHENA_TABLE,searchDomainString,ATHENA_TABLE)
-    execid = brevitycore.core.queryathena(ATHENA_DB, ATHENA_BUCKET, query)
-    # Utilize executionID to retrieve results
-    return execid
-
 # This function will concatenate the wildcard scope domains to incorporate into one larger Athena query.    
 def sonarRun(programName, refinedBucketPath, ATHENA_DB, ATHENA_BUCKET, ATHENA_TABLE):
     
@@ -66,3 +52,10 @@ def sonarLoadSubdomains(programName, refinedBucketPath, programInputBucketPath):
     else:
         sonarStoreStatus = "No domains returned from Sonar"
     return sonarStoreStatus
+    
+# This function will update the Athena table to point to the latest Sonar FDNS datasets
+def updateSonarPartitions(ATHENA_DB, ATHENA_BUCKET):
+    query = 'msck repair table rapid7_fdns_any;'
+    execid = brevitycore.core.queryathena(ATHENA_DB, ATHENA_BUCKET, query)
+    downloadURL = brevitycore.core.retrieveresults(execid)
+    s=requests.get(downloadURL).content

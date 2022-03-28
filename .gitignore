@@ -3,6 +3,7 @@ Python-3.8*
 lambdas/build*
 tools/nuclei/*
 tools/*
+unused/*
 
 # Original
 *.swp

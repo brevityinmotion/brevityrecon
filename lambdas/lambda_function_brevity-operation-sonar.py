@@ -1,6 +1,6 @@
 import json, boto3, os, re
 import urllib.parse
-import brevitycore.sonar
+import brevityprogram.sonar
 
 def lambda_handler(event, context):
     
@@ -25,7 +25,7 @@ def lambda_handler(event, context):
     programName = str(event['program'])
     operationName = str(event['operation'])
     
-    execid = brevitycore.sonar.sonarRun(programName,refinedBucketPath,ATHENA_DB,ATHENA_BUCKET,ATHENA_TABLE)
+    execid = brevityprogram.sonar.sonarRun(programName,refinedBucketPath,ATHENA_DB,ATHENA_BUCKET,ATHENA_TABLE)
     
     if (execid == 'No Wildcards'):
         return {
@@ -36,10 +36,10 @@ def lambda_handler(event, context):
         }
         
     else:
-        sonarRetrieveStatus = brevitycore.sonar.sonarRetrieveResults(programName, execid, refinedBucketPath)
+        sonarRetrieveStatus = brevityprogram.sonar.sonarRetrieveResults(programName, execid, refinedBucketPath)
     
         if (sonarRetrieveStatus == 'Subdomains successfully generated'):
-            sonarLoadStatus = brevitycore.sonar.sonarLoadSubdomains(programName, refinedBucketPath, programInputBucketPath)
+            sonarLoadStatus = brevityprogram.sonar.sonarLoadSubdomains(programName, refinedBucketPath, programInputBucketPath)
         else: sonarLoadStatus = 'No subdomains loaded'
   
         responseData = {
